@@ -92,7 +92,7 @@ The system uses the following MySQL tables:
 **📂 Database import:**
 SQL file with complete database structure is located in the `database/` directory in schema.sql file.
 
-### 4. Running the Application
+### 5. Running the Application
 
 ```bash
 # Development mode
