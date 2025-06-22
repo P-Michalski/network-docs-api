@@ -2,7 +2,8 @@
 
 ## 📋 Project Description
 
-Backend API for a computer network management application, enabling comprehensive management of network devices and their connections. The system supports various device types (routers, switches, access points, PCs) and both wired connections (Ethernet ports) and wireless connections (WiFi cards).
+Backend API for a computer network management application, enabling comprehensive management of network devices and their connections. The system supports various device types (routers, switches, access points, PCs) and both wired connections (Ethernet ports) and wireless connections (WiFi cards). It is designed to work with frontend project available here:
+[https://github.com/P-Michalski/network-docs](https://github.com/P-Michalski/network-docs)
 
 ## 🚀 Technologies
 
