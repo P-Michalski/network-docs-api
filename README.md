@@ -32,6 +32,8 @@ src/
 │   └── models.ts
 ├── db.ts               # Database configuration
 └── server.ts           # Main server file
+database/
+└── schema.sql          # Database schema
 ```
 
 ## ⚙️ Configuration
