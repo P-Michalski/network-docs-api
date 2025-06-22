@@ -30,7 +30,6 @@ src/
 │   └── general.validators.ts      # Basic validators
 ├── types/               # TypeScript type definitions
 │   └── models.ts
-├── tests/               # Unit tests
 ├── db.ts               # Database configuration
 └── server.ts           # Main server file
 ```
