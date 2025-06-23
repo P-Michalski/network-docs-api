@@ -72,24 +72,6 @@ export const validateEnum = (value: any, allowedValues: string[], fieldName: str
   return errors;
 };
 
-// Walidacja adresu IP
-export const validateIPAddress = (ip: string, fieldName: string, required: boolean = false): GeneralValidationError[] => {
-  const errors: GeneralValidationError[] = [];
-  
-  if (!ip || ip.trim() === '') {
-    if (required) {
-      errors.push({ field: fieldName, message: `${fieldName} jest wymagany` });
-    }
-    return errors;
-  }
-  
-  const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  if (!ipRegex.test(ip.trim())) {
-    errors.push({ field: fieldName, message: `${fieldName} ma nieprawidłowy format IP` });
-  }
-  
-  return errors;
-};
 
 // Walidacja adresu MAC
 export const validateMACAddress = (mac: string, fieldName: string, required: boolean = false): GeneralValidationError[] => {
