@@ -33,7 +33,7 @@ export const validateDeviceName = (nazwa: string): ValidationError[] => {
 // Walidacja typu urządzenia
 export const validateDeviceType = (typ: string): ValidationError[] => {
   const errors: ValidationError[] = [];
-  const allowedTypes = ['Router', 'Switch', 'Access Point', 'PC'];
+  const allowedTypes = ['Router', 'Switch', 'Access Point', 'PC', 'Server', 'Printer'];
   
   errors.push(...validateEnum(typ, allowedTypes, 'typ_u'));
   
@@ -222,10 +222,6 @@ export const validateWifiCards = (karty_wifi: any[], deviceType: string): Valida
   return errors;
 };
 
-
-
-
-
 // Walidacja kompatybilności wersji WiFi z pasmami
 export const validateWifiVersionBandCompatibility = (karty_wifi: any[]): ValidationError[] => {
   const errors: ValidationError[] = [];
@@ -337,49 +333,81 @@ export const validateWifiSpeedVersionCompatibility = (karty_wifi: any[]): Valida
   return errors;
 };
 
+// Walidacja minimum wymaganych portów dla różnych typów urządzeń
+export const validateMinimumPorts = (porty: any[], deviceType: string): ValidationError[] => {
+  const errors: ValidationError[] = [];
+  
+  if (!Array.isArray(porty)) {
+    return errors; // To zostanie złapane w validatePorts
+  }
+  
+  // Sprawdź minimum wymaganych portów dla różnych typów urządzeń
+  switch (deviceType) {
+    case 'Router':
+    case 'Access Point':
+    case 'PC':
+    case 'Server':
+    case 'Printer':
+      if (porty.length < 1) {
+        errors.push({ field: 'porty', message: `${deviceType} musi mieć co najmniej 1 port` });
+      }
+      break;
+    case 'Switch':
+      if (porty.length < 2) {
+        errors.push({ field: 'porty', message: 'Switch musi mieć co najmniej 2 porty' });
+      }
+      break;
+  }
+  
+  return errors;
+};
+
+// Walidacja minimum wymaganych kart WiFi dla Access Point
+export const validateMinimumWifiCards = (karty_wifi: any[], deviceType: string): ValidationError[] => {
+  const errors: ValidationError[] = [];
+  
+  if (!Array.isArray(karty_wifi)) {
+    return errors; // To zostanie złapane w validateWifiCards
+  }
+  
+  // Access Point musi mieć co najmniej jedną kartę WiFi
+  if (deviceType === 'Access Point') {
+    if (karty_wifi.length < 1) {
+      errors.push({ field: 'karty_wifi', message: 'Access Point musi mieć co najmniej 1 kartę WiFi' });
+    }
+  }
+  
+  return errors;
+};
+
 // Główna funkcja walidacji urządzenia
 export const validateDevice = (deviceData: any): ValidationResult => {
-  console.log('=== DEBUG validateDevice ===');
-  console.log('Otrzymane deviceData:', JSON.stringify(deviceData, null, 2));
-  console.log('deviceData type:', typeof deviceData);
-  console.log('deviceData keys:', Object.keys(deviceData || {}));
-  console.log('deviceData.urzadzenie:', deviceData?.urzadzenie);
-  console.log('deviceData.typ:', deviceData?.typ);
-  console.log('!!deviceData:', !!deviceData);
-  console.log('!!deviceData.urzadzenie:', !!deviceData?.urzadzenie);
-  console.log('!!deviceData.typ:', !!deviceData?.typ);
-  
   const errors: ValidationError[] = [];
 
   // Sprawdź czy podstawowe pola istnieją
   if (!deviceData) {
-    console.log('BŁĄD: brak deviceData');
     errors.push({ field: 'deviceData', message: 'Dane urządzenia są wymagane' });
     return { isValid: false, errors };
   }
   
   // Walidacja podstawowych danych urządzenia
   if (deviceData.urzadzenie) {
-    console.log('OK: deviceData.urzadzenie istnieje');
     if (!deviceData.urzadzenie.nazwa_urzadzenia) {
       errors.push({ field: 'urzadzenie.nazwa_urzadzenia', message: 'Nazwa urządzenia jest wymagana' });
     } else {
       errors.push(...validateDeviceName(deviceData.urzadzenie.nazwa_urzadzenia));
     }
   } else {
-    console.log('BŁĄD: brak deviceData.urzadzenie');
     errors.push({ field: 'urzadzenie', message: 'Dane urządzenia są wymagane' });
   }
   
   if (deviceData.typ) {
-    console.log('OK: deviceData.typ istnieje');
     if (!deviceData.typ.typ_u) {
       errors.push({ field: 'typ.typ_u', message: 'Typ urządzenia jest wymagany' });
     } else {
       errors.push(...validateDeviceType(deviceData.typ.typ_u));
     }
   } else {
-    console.log('BŁĄD: brak deviceData.typ');
     errors.push({ field: 'typ', message: 'Typ urządzenia jest wymagany' });
   }
   
@@ -400,15 +428,19 @@ export const validateDevice = (deviceData: any): ValidationResult => {
   // Walidacja kart WiFi (może być pustą tablicą)
   const karty_wifi = deviceData.karty_wifi || [];
   const deviceType = deviceData.typ?.typ_u || '';
+    errors.push(...validateWifiCards(karty_wifi, deviceType));
   
-  errors.push(...validateWifiCards(karty_wifi, deviceType));
-    // Walidacja dodatkowych reguł tylko jeśli podstawowe dane są prawidłowe
+  // Walidacja dodatkowych reguł tylko jeśli podstawowe dane są prawidłowe
   if (deviceType) {
-    // Usunięto walidacje minimum aktywnych portów i kart WiFi - urządzenia mogą mieć tylko nieaktywne komponenty
+    // Walidacja minimum wymaganych portów i kart WiFi (bez względu na status aktywny/nieaktywny)
+    errors.push(...validateMinimumPorts(porty, deviceType));
+    errors.push(...validateMinimumWifiCards(karty_wifi, deviceType));
   }
   
   errors.push(...validateWifiVersionBandCompatibility(karty_wifi));
   errors.push(...validateWifiSpeedVersionCompatibility(karty_wifi));
+  errors.push(...validateMinimumPorts(porty, deviceType));
+  errors.push(...validateMinimumWifiCards(karty_wifi, deviceType));
   
   return {
     isValid: errors.length === 0,
